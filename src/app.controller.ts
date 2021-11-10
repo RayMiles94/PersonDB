@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Render } from '@nestjs/common';
 import { AppService } from './app.service';
+
 
 @Controller()
 export class AppController {
@@ -9,4 +10,12 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('/about')
+  @Render('index')
+  public root() {
+    return {};
+  }
+
+
 }
