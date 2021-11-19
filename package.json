@@ -25,6 +25,8 @@
     "@nestjs/core": "^8.2.0",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/typeorm": "^8.0.2",
+    "handlebars": "^4.7.7",
+    "handlebars-layouts": "^3.1.4",
     "hbs": "^4.1.2",
     "mysql2": "^2.3.3-rc.0",
     "reflect-metadata": "^0.1.13",
