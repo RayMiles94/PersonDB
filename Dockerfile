@@ -1,12 +1,16 @@
 # ------------------------
-# 1. Base image with Node.js
+# 1. Base image with Node.js + PostgreSQL
 # ------------------------
 FROM node:16-alpine AS base
 
 WORKDIR /usr/src/app
 
-# Install build dependencies
-RUN apk add --no-cache bash python3 make g++
+# Install build dependencies + PostgreSQL
+RUN apk add --no-cache bash python3 make g++ postgresql postgresql-contrib postgresql-client
+
+# Initialize PostgreSQL data directory
+RUN mkdir -p /var/lib/postgresql/data /run/postgresql && \
+    chown -R postgres:postgres /var/lib/postgresql /run/postgresql
 
 
 # ------------------------
@@ -16,7 +20,6 @@ FROM base AS deps
 
 COPY package*.json ./
 
-# Only install dependencies, skip devDeps for production
 RUN npm install --legacy-peer-deps
 
 
@@ -34,17 +37,28 @@ RUN npm run build
 
 
 # ------------------------
-# 4. Production runtime
+# 4. Production runtime with PostgreSQL
 # ------------------------
 FROM node:16-alpine AS prod
 
 WORKDIR /usr/src/app
 
+# Install PostgreSQL runtime
+RUN apk add --no-cache postgresql postgresql-client
+
+# Copy dependencies + build
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY package*.json ./
 
-# Expose app port
-EXPOSE 4500
+# Set Postgres environment
+ENV POSTGRES_USER=admin
+ENV POSTGRES_PASSWORD=admin
+ENV POSTGRES_DB=persondb
+ENV PGDATA=/var/lib/postgresql/data
 
-CMD ["node", "dist/main"]
+# Expose app port + Postgres default port
+EXPOSE 4500 5432
+
+# Start both Postgres and the NestJS app
+CMD sh -c "pg_ctl -D /var/lib/postgresql/data -l logfile start && node dist/main"
