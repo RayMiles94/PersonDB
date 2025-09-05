@@ -5,7 +5,7 @@ FROM node:16-alpine AS base
 
 WORKDIR /usr/src/app
 
-# Install dependencies for NestJS + TypeORM (MySQL)
+# Install build dependencies
 RUN apk add --no-cache bash python3 make g++
 
 
@@ -44,6 +44,7 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY package*.json ./
 
-EXPOSE 3000
+# Expose app port
+EXPOSE 4500
 
 CMD ["node", "dist/main"]
